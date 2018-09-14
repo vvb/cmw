@@ -35,6 +35,8 @@ func (s *cmwClient) init() {
 	s.username = os.Getenv("MY_USERNAME")
 	s.password = os.Getenv("MY_PASSWORD")
 	s.clientID = os.Getenv("MY_CLIENTID")
+	s.setCsrfToken()
+	s.getSessionCookies()
 }
 
 // getCookies - Gets cookies
@@ -51,9 +53,10 @@ func (s *cmwClient) getCookies() map[string][]*http.Cookie {
 	return cookies
 }
 
-// getCsrfToken - fetches the csrf token given a list of cookies
-func (s *cmwClient) getCsrfToken(cookies []*http.Cookie) {
-	for _, c := range cookies {
+// setCsrfToken - fetches the csrf token given a list of cookies
+func (s *cmwClient) setCsrfToken() {
+	cookies := s.getCookies()
+	for _, c := range cookies["cookies"] {
 		if c.Name == "csrftoken" {
 			s.csrftoken = c.Value
 		}
@@ -113,9 +116,6 @@ func (s *cmwClient) getDailyPortfolio() {
 func main() {
 	cc := &cmwClient{}
 	cc.init()
-	cookies := cc.getCookies()
-	cc.getCsrfToken(cookies["cookies"])
-	cc.getSessionCookies()
 	cc.getDailyData()
 	cc.getDailyPortfolio()
 }
