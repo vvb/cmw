@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -84,8 +85,22 @@ func (s *cmwClient) getSessionCookies() {
 	defer r.Body.Close()
 }
 
+// getDailyData - Gets the current allocation numbers across various asset classes
 func (s *cmwClient) getDailyData() {
 	r, err := s.client.Get(CmwURL + "/api/client/portfolio/daily_master_values/" + s.clientID)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	data, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	fmt.Printf("%s", data)
+}
+
+// getDailyPortfolio - Gets your current portfolio
+func (s *cmwClient) getDailyPortfolio() {
+	today := time.Now().Local()
+	r, err := s.client.Get(CmwURL + "/api/client/portfolio/holdings/client/daily/report/" + s.clientID + "?given_date=" + today.Format("2006-01-02"))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -102,4 +117,5 @@ func main() {
 	cc.getCsrfToken(cookies["cookies"])
 	cc.getSessionCookies()
 	cc.getDailyData()
+	cc.getDailyPortfolio()
 }
